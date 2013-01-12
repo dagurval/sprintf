@@ -1,9 +1,9 @@
 #! nqp
 
 sub sprintf($format, *@arguments) {
-    my $directive := /'%s'/;
+    my $directive := /'%' <[s%]>/;
 
-    my $dircount := +match($format, $directive, :global);
+    my $dircount := +match($format, $directive, :global) - +match($format, /'%%'/, :global);
     my $argcount := +@arguments;
 
     nqp::die("Too few directives: found $dircount, fewer than the $argcount arguments after the format string")
@@ -14,7 +14,12 @@ sub sprintf($format, *@arguments) {
 
     my $argument_index := 0;
     sub inject($match) {
-        return @arguments[$argument_index++];
+        if ~$match eq '%s' {
+            return @arguments[$argument_index++];
+        }
+        elsif ~$match eq '%%' {
+            return '%';
+        }
     }
 
     return subst($format, $directive, &inject, :global);
@@ -33,7 +38,7 @@ sub dies_ok(&callable, $description) {
     }
 }
 
-plan(7);
+plan(8);
 
 ok( sprintf('Walter Bishop') eq 'Walter Bishop', 'no directives' );
 
@@ -47,3 +52,5 @@ ok( $die_message eq 'Too few directives: found 2, fewer than the 3 arguments aft
 dies_ok({ sprintf('%s %s %s', 'Olivia', 'Dunham') }, 'directives > arguments' );
 ok( $die_message eq 'Too many directives: found 3, but only 2 arguments after the format string',
     'directives > arguments error message' );
+
+ok( sprintf('%% %% %%') eq '% % %', '%% escape' );
