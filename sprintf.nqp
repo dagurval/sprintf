@@ -1,7 +1,9 @@
 #! nqp
 
 sub sprintf($format, *@arguments) {
-    my $dircount := +match($format, /'%s'/, :global);
+    my $directive := /'%s'/;
+
+    my $dircount := +match($format, $directive, :global);
     my $argcount := +@arguments;
 
     nqp::die("Too few directives: found $dircount, fewer than the $argcount arguments after the format string")
@@ -15,7 +17,7 @@ sub sprintf($format, *@arguments) {
         return @arguments[$argument_index++];
     }
 
-    return subst($format, /'%s'/, &inject, :global);
+    return subst($format, $directive, &inject, :global);
 }
 
 my $die_message := 'unset';
