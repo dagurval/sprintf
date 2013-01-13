@@ -1,7 +1,7 @@
 #! nqp
 
 sub sprintf($format, *@arguments) {
-    my $directive := /'%' <[s%]>/;
+    my $directive := /'%' $<letter>=(.)/;
 
     my $dircount := +match($format, $directive, :global) - +match($format, /'%%'/, :global);
     my $argcount := +@arguments;
@@ -23,12 +23,17 @@ sub sprintf($format, *@arguments) {
     }
 
     my %directives := nqp::hash(
-        '%s', &string_directive,
-        '%%', &percent_escape,
+        's', &string_directive,
+        '%', &percent_escape,
     );
 
     sub inject($match) {
-        my $directive := %directives{~$match};
+        nqp::die("'" ~ ~$match<letter>
+            ~ "' is not valid in sprintf format sequence '"
+            ~ ~$match ~ "'")
+            unless nqp::existskey(%directives, ~$match<letter>);
+
+        my $directive := %directives{~$match<letter>};
         return $directive();
     }
 
@@ -48,7 +53,7 @@ sub dies_ok(&callable, $description) {
     }
 }
 
-plan(8);
+plan(10);
 
 ok( sprintf('Walter Bishop') eq 'Walter Bishop', 'no directives' );
 
@@ -64,3 +69,7 @@ ok( $die_message eq 'Too many directives: found 3, but only 2 arguments after th
     'directives > arguments error message' );
 
 ok( sprintf('%% %% %%') eq '% % %', '%% escape' );
+
+dies_ok({ sprintf('%a', 'Science') }, 'unknown directive' );
+ok( $die_message eq "'a' is not valid in sprintf format sequence '%a'",
+    'unknown directive error message' );
