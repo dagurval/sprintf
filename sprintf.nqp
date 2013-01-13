@@ -13,13 +13,23 @@ sub sprintf($format, *@arguments) {
         if $dircount > $argcount;
 
     my $argument_index := 0;
+
+    sub string_directive() {
+        return @arguments[$argument_index++];
+    }
+
+    sub percent_escape() {
+        return '%';
+    }
+
+    my %directives := nqp::hash(
+        '%s', &string_directive,
+        '%%', &percent_escape,
+    );
+
     sub inject($match) {
-        if ~$match eq '%s' {
-            return @arguments[$argument_index++];
-        }
-        elsif ~$match eq '%%' {
-            return '%';
-        }
+        my $directive := %directives{~$match};
+        return $directive();
     }
 
     return subst($format, $directive, &inject, :global);
