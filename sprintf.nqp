@@ -1,7 +1,7 @@
 #! nqp
 
 sub sprintf($format, *@arguments) {
-    my $directive := /'%' $<letter>=(.)/;
+    my $directive := /'%' $<size>=(\d+)? $<letter>=(.)/;
 
     my $dircount := +match($format, $directive, :global) - +match($format, /'%%'/, :global);
     my $argcount := +@arguments;
@@ -16,11 +16,19 @@ sub sprintf($format, *@arguments) {
 
     my $argument_index := 0;
 
-    sub string_directive() {
-        return @arguments[$argument_index++];
+    sub string_directive($size) {
+        sub infix_x($s, $n) {
+            my $result := pir::new__Ps('StringBuilder');
+            my $i := 0;
+            nqp::push_s($result, ' ') while $i++ < $n;
+            ~$result;
+        }
+
+        my $string := @arguments[$argument_index++];
+        return infix_x(' ', $size - nqp::chars($string)) ~ $string;
     }
 
-    sub percent_escape() {
+    sub percent_escape($size) {
         return '%';
     }
 
@@ -36,7 +44,8 @@ sub sprintf($format, *@arguments) {
             unless nqp::existskey(%directives, ~$match<letter>);
 
         my $directive := %directives{~$match<letter>};
-        return $directive();
+        my $size := +$match<size>[0];
+        return $directive($size);
     }
 
     return subst($format, $directive, &inject, :global);
@@ -64,7 +73,7 @@ sub is($actual, $expected, $description) {
     }
 }
 
-plan(10);
+plan(11);
 
 is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
@@ -88,3 +97,5 @@ is(sprintf('%% %% %%'), '% % %', '%% escape' );
 dies_ok({ sprintf('%a', 'Science') }, 'unknown directive' );
 is($die_message, "'a' is not valid in sprintf format sequence '%a'",
     'unknown directive error message' );
+
+is(sprintf('<%6s>', 12), '<    12>', 'right-justified %s with space padding');
