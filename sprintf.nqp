@@ -1,9 +1,14 @@
 #! nqp
 
 sub sprintf($format, *@arguments) {
-    my $directive := /'%' $<size>=(\d+)? $<letter>=(.)/;
+    my $directive := /'%' $<size>=(\d+|'*')? $<letter>=(.)/;
+    my $star_directive := /'%*' (.)/;
 
-    my $dircount := +match($format, $directive, :global) - +match($format, /'%%'/, :global);
+    my $dircount :=
+        +match($format, $directive, :global)        # actual directives
+        - +match($format, /'%%'/, :global)          # %% don't require arguments
+        + +match($format, $star_directive, :global) # the star wants one more arg
+    ;
     my $argcount := +@arguments;
 
     nqp::die("Too few directives: found $dircount, fewer than the $argcount arguments after the format string")
@@ -23,13 +28,18 @@ sub sprintf($format, *@arguments) {
         ~$result;
     }
 
+    # NQPBUG: Can't use the actual prefix 'next' in a subname
+    sub newt_argument() {
+        @arguments[$argument_index++];
+    }
+
     sub string_directive($size) {
-        my $string := @arguments[$argument_index++];
-        return infix_x(' ', $size - nqp::chars($string)) ~ $string;
+        my $string := newt_argument();
+        infix_x(' ', $size - nqp::chars($string)) ~ $string;
     }
 
     sub percent_escape($size) {
-        return infix_x(' ', $size - 1) ~ '%';
+        infix_x(' ', $size - 1) ~ '%';
     }
 
     my %directives := nqp::hash(
@@ -44,11 +54,11 @@ sub sprintf($format, *@arguments) {
             unless nqp::existskey(%directives, ~$match<letter>);
 
         my $directive := %directives{~$match<letter>};
-        my $size := +$match<size>[0];
-        return $directive($size);
+        my $size := $match<size>[0] eq '*' ?? newt_argument() !! +$match<size>[0];
+        $directive($size);
     }
 
-    return subst($format, $directive, &inject, :global);
+    subst($format, $directive, &inject, :global);
 }
 
 my $die_message := 'unset';
@@ -73,7 +83,7 @@ sub is($actual, $expected, $description) {
     }
 }
 
-plan(14);
+plan(15);
 
 is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
@@ -100,3 +110,5 @@ is($die_message, "'a' is not valid in sprintf format sequence '%a'",
 
 is(sprintf('<%6s>', 12), '<    12>', 'right-justified %s with space padding');
 is(sprintf('<%6%>', 12), '<     %>', 'right-justified %% with space padding');
+
+is(sprintf('<%*s>', 6, 12), '<    12>', 'right-justified %s with space padding, star-specified');
