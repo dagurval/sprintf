@@ -16,20 +16,20 @@ sub sprintf($format, *@arguments) {
 
     my $argument_index := 0;
 
-    sub string_directive($size) {
-        sub infix_x($s, $n) {
-            my $result := pir::new__Ps('StringBuilder');
-            my $i := 0;
-            nqp::push_s($result, ' ') while $i++ < $n;
-            ~$result;
-        }
+    sub infix_x($s, $n) {
+        my $result := pir::new__Ps('StringBuilder');
+        my $i := 0;
+        nqp::push_s($result, ' ') while $i++ < $n;
+        ~$result;
+    }
 
+    sub string_directive($size) {
         my $string := @arguments[$argument_index++];
         return infix_x(' ', $size - nqp::chars($string)) ~ $string;
     }
 
     sub percent_escape($size) {
-        return '%';
+        return infix_x(' ', $size - 1) ~ '%';
     }
 
     my %directives := nqp::hash(
@@ -73,7 +73,7 @@ sub is($actual, $expected, $description) {
     }
 }
 
-plan(11);
+plan(14);
 
 is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
@@ -99,3 +99,4 @@ is($die_message, "'a' is not valid in sprintf format sequence '%a'",
     'unknown directive error message' );
 
 is(sprintf('<%6s>', 12), '<    12>', 'right-justified %s with space padding');
+is(sprintf('<%6%>', 12), '<     %>', 'right-justified %% with space padding');
