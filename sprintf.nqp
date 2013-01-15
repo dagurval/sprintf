@@ -2,12 +2,13 @@
 
 sub sprintf($format, *@arguments) {
     my $directive := /'%' $<size>=(\d+|'*')? $<letter>=(.)/;
+    my $percent_directive := /'%' $<size>=(\d+|'*')? '%'/;
     my $star_directive := /'%*' (.)/;
 
     my $dircount :=
-        +match($format, $directive, :global)        # actual directives
-        - +match($format, /'%%'/, :global)          # %% don't require arguments
-        + +match($format, $star_directive, :global) # the star wants one more arg
+        +match($format, $directive, :global)           # actual directives
+        - +match($format, $percent_directive, :global) # %% don't require arguments
+        + +match($format, $star_directive, :global)    # the star wants one more arg
     ;
     my $argcount := +@arguments;
 
@@ -83,7 +84,7 @@ sub is($actual, $expected, $description) {
     }
 }
 
-plan(15);
+plan(16);
 
 is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
@@ -109,6 +110,7 @@ is($die_message, "'a' is not valid in sprintf format sequence '%a'",
     'unknown directive error message' );
 
 is(sprintf('<%6s>', 12), '<    12>', 'right-justified %s with space padding');
-is(sprintf('<%6%>', 12), '<     %>', 'right-justified %% with space padding');
+is(sprintf('<%6%>'), '<     %>', 'right-justified %% with space padding');
 
 is(sprintf('<%*s>', 6, 12), '<    12>', 'right-justified %s with space padding, star-specified');
+is(sprintf('<%*%>', 6), '<     %>', 'right-justified %% with space padding, star-specified');
