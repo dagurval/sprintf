@@ -55,27 +55,36 @@ sub dies_ok(&callable, $description) {
     }
 }
 
+sub is($actual, $expected, $description) {
+    my $they_are_equal := $actual eq $expected;
+    ok($they_are_equal, $description);
+    unless $they_are_equal {
+        say("#   Actual value: $actual");
+        say("# Expected value: $expected");
+    }
+}
+
 plan(10);
 
-ok( sprintf('Walter Bishop') eq 'Walter Bishop', 'no directives' );
+is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
-ok( sprintf('Peter %s', 'Bishop') eq 'Peter Bishop', 'one %s directive' );
-ok( sprintf('%s %s', 'William', 'Bell') eq 'William Bell', 'two %s directives' );
+is(sprintf('Peter %s', 'Bishop'), 'Peter Bishop', 'one %s directive' );
+is(sprintf('%s %s', 'William', 'Bell'), 'William Bell', 'two %s directives' );
 
 dies_ok({ sprintf('%s %s', 'Dr.', 'William', 'Bell') }, 'arguments > directives' );
-ok( $die_message eq 'Too few directives: found 2, fewer than the 3 arguments after the format string',
+is($die_message, 'Too few directives: found 2, fewer than the 3 arguments after the format string',
     'arguments > directives error message' );
 
 dies_ok({ sprintf('%s %s %s', 'Olivia', 'Dunham') }, 'directives > arguments' );
-ok( $die_message eq 'Too many directives: found 3, but only 2 arguments after the format string',
+is($die_message, 'Too many directives: found 3, but only 2 arguments after the format string',
     'directives > arguments error message' );
 
 dies_ok({ sprintf('%s %s') }, 'directives > 0 arguments' );
-ok( $die_message eq 'Too many directives: found 2, but no arguments after the format string',
+is($die_message, 'Too many directives: found 2, but no arguments after the format string',
     'directives > 0 arguments error message' );
 
-ok( sprintf('%% %% %%') eq '% % %', '%% escape' );
+is(sprintf('%% %% %%'), '% % %', '%% escape' );
 
 dies_ok({ sprintf('%a', 'Science') }, 'unknown directive' );
-ok( $die_message eq "'a' is not valid in sprintf format sequence '%a'",
+is($die_message, "'a' is not valid in sprintf format sequence '%a'",
     'unknown directive error message' );
