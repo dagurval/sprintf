@@ -84,7 +84,7 @@ sub is($actual, $expected, $description) {
     }
 }
 
-plan(16);
+plan(17);
 
 is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
@@ -114,3 +114,5 @@ is(sprintf('<%6%>'), '<     %>', 'right-justified %% with space padding');
 
 is(sprintf('<%*s>', 6, 12), '<    12>', 'right-justified %s with space padding, star-specified');
 is(sprintf('<%*%>', 6), '<     %>', 'right-justified %% with space padding, star-specified');
+
+is(sprintf('<%2s>', 'long'), '<long>', '%s string longer than specified size');
