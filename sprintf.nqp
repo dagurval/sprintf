@@ -39,8 +39,19 @@ sub sprintf($format, *@arguments) {
         infix_x(' ', $size - nqp::chars($string)) ~ $string;
     }
 
+    sub intify($number_representation) {
+        my $result;
+        if $number_representation > 0 {
+            $result := nqp::floor_n($number_representation);
+        }
+        else {
+            $result := nqp::ceil_n($number_representation);
+        }
+        $result;
+    }
+
     sub decimal_int_directive($size) {
-        my $int := nqp::floor_n(newt_argument());
+        my $int := intify(newt_argument());
         infix_x(' ', $size - nqp::chars($int)) ~ $int;
     }
 
@@ -90,7 +101,7 @@ sub is($actual, $expected, $description) {
     }
 }
 
-plan(20);
+plan(21);
 
 is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
@@ -126,3 +137,4 @@ is(sprintf('<%2s>', 'long'), '<long>', '%s string longer than specified size');
 is(sprintf('<%d>', 1), '<1>', '%d without size or precision');
 is(sprintf('<%d>', "lol, I am a string"), '<0>', '%d on a non-number');
 is(sprintf('<%d>', 42.18), '<42>', '%d on a float');
+is(sprintf('<%d>', -18.42), '<-18>', '%d on a negative float');
