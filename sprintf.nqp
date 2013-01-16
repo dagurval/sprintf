@@ -39,13 +39,19 @@ sub sprintf($format, *@arguments) {
         infix_x(' ', $size - nqp::chars($string)) ~ $string;
     }
 
+    sub decimal_int_directive($size) {
+        my $string := newt_argument();
+        infix_x(' ', $size - nqp::chars($string)) ~ $string;
+    }
+
     sub percent_escape($size) {
         infix_x(' ', $size - 1) ~ '%';
     }
 
     my %directives := nqp::hash(
-        's', &string_directive,
         '%', &percent_escape,
+        's', &string_directive,
+        'd', &decimal_int_directive,
     );
 
     sub inject($match) {
@@ -84,7 +90,7 @@ sub is($actual, $expected, $description) {
     }
 }
 
-plan(17);
+plan(18);
 
 is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
@@ -116,3 +122,5 @@ is(sprintf('<%*s>', 6, 12), '<    12>', 'right-justified %s with space padding, 
 is(sprintf('<%*%>', 6), '<     %>', 'right-justified %% with space padding, star-specified');
 
 is(sprintf('<%2s>', 'long'), '<long>', '%s string longer than specified size');
+
+is(sprintf('<%d>', 1), '<1>', '%d without size or precision');
