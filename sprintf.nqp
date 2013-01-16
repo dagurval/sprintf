@@ -40,7 +40,7 @@ sub sprintf($format, *@arguments) {
     }
 
     sub decimal_int_directive($size) {
-        my $string := newt_argument();
+        my $string := nqp::stringify(nqp::numify(newt_argument()));
         infix_x(' ', $size - nqp::chars($string)) ~ $string;
     }
 
@@ -90,7 +90,7 @@ sub is($actual, $expected, $description) {
     }
 }
 
-plan(18);
+plan(19);
 
 is(sprintf('Walter Bishop'), 'Walter Bishop', 'no directives' );
 
@@ -124,3 +124,4 @@ is(sprintf('<%*%>', 6), '<     %>', 'right-justified %% with space padding, star
 is(sprintf('<%2s>', 'long'), '<long>', '%s string longer than specified size');
 
 is(sprintf('<%d>', 1), '<1>', '%d without size or precision');
+is(sprintf('<%d>', "lol, I am a string"), '<0>', '%d on a non-number');
