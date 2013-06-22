@@ -203,3 +203,4 @@ is(sprintf('<%d>', -18.42), '<-18>', '%d on a negative float');
 
 is(sprintf('%c', 97), 'a', '%c directive');
 is(sprintf('%10c', 65), '         A', '%c directive with padding');
+is(sprintf('%c%c%c', 187, 246, 171), '»ö«', '%c directive with non-asci codepoints');
