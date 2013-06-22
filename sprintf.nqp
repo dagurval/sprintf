@@ -23,10 +23,10 @@ sub sprintf($format, *@arguments) {
     my $argument_index := 0;
 
     sub infix_x($s, $n) {
-        my $result := pir::new__Ps('StringBuilder');
+        my @strings;
         my $i := 0;
-        nqp::push_s($result, ' ') while $i++ < $n;
-        ~$result;
+        @strings.push($s) while $i++ < $n;
+        nqp::join('', @strings);
     }
 
     sub next_argument() {
