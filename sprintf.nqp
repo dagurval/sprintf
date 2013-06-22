@@ -5,6 +5,11 @@
 #   $ perldoc -f sprintf
 #   $ man 3 sprintf
 #
+# And here are some existing tests to be inspired by:
+#
+#   https://github.com/mirrors/perl/blob/blead/t/op/sprintf.t#L176
+#   https://github.com/perl6/roast/blob/master/S32-str/sprintf.t
+#
 # The first of those texts takes precedence over the second one.
 # Unless otherwise specified, we're aiming for full coverage of
 # the functionality mentioned in those two manpages.
