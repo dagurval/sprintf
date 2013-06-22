@@ -71,7 +71,7 @@ sub sprintf($format, *@arguments) {
             unless nqp::existskey(%directives, ~$match<letter>);
 
         my $directive := %directives{~$match<letter>};
-        my $size := $match<size>[0] eq '*' ?? next_argument() !! +$match<size>[0];
+        my $size := $match<size> eq '*' ?? next_argument() !! +$match<size>;
         $directive($size);
     }
 
