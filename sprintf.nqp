@@ -202,3 +202,4 @@ is(sprintf('<%d>', 42.18), '<42>', '%d on a float');
 is(sprintf('<%d>', -18.42), '<-18>', '%d on a negative float');
 
 is(sprintf('%c', 97), 'a', '%c directive');
+is(sprintf('%10c', 65), '         A', '%c directive with padding');
