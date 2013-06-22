@@ -1,5 +1,58 @@
 #! nqp
 
+# Here is how to read up on sprintf:
+#
+#   $ perldoc -f sprintf
+#   $ man 3 sprintf
+#
+# The first of those texts takes precedence over the second one.
+# Unless otherwise specified, we're aiming for full coverage of
+# the functionality mentioned in those two manpages.
+#
+# Here's how to incorporate new functionality:
+#
+#   1. Write a failing test (run it, see it fail)
+#   2. Implement the functionality (run tests, see them pass)
+#   3. Refactor
+#
+# Incidentally, this is how to build most software. TDD -- it
+# works.
+#
+# Here's a rough list of what's implemented already:
+#
+#   %s
+#   %d
+#   right-justification with space padding
+#   that star thingy
+#
+# Here's a rough (incomplete) list of what remains to be done:
+#
+#   %c
+#   %u
+#   %b
+#   %B
+#   %o
+#   %x
+#   %X
+#   make sure bigints work properly
+#   %e
+#   %f
+#   %g
+#   %E, %G
+#   precision or maximum width (.)
+#   synonyms (%i %D %U %O %F)
+#   format parameter index (1$ etc)
+#   left-justify (-)
+#   pad with zeros (0)
+#   ensure leading "0" or "0b" etc (#)
+#   %v
+#
+# Here's a list of things we will not be supporting, ever:
+#
+#   pointers (%p)
+#   l-value trickery (%n)
+#   size (using hh, h, j, l, q, L, ll, t, or z)
+
 sub sprintf($format, *@arguments) {
     my $directive := /'%' $<size>=(\d+|'*')? $<letter>=(.)/;
     my $percent_directive := /'%' $<size>=(\d+|'*')? '%'/;
