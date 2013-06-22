@@ -116,10 +116,15 @@ sub sprintf($format, *@arguments) {
         infix_x(' ', $size - 1) ~ '%';
     }
 
+    sub chr_directive($size) {
+        infix_x(' ', $size - 1) ~ nqp::chr(next_argument());
+    }
+
     my %directives := nqp::hash(
         '%', &percent_escape,
         's', &string_directive,
         'd', &decimal_int_directive,
+        'c', &chr_directive
     );
 
     sub inject($match) {
@@ -195,3 +200,5 @@ is(sprintf('<%d>', 1), '<1>', '%d without size or precision');
 is(sprintf('<%d>', "lol, I am a string"), '<0>', '%d on a non-number');
 is(sprintf('<%d>', 42.18), '<42>', '%d on a float');
 is(sprintf('<%d>', -18.42), '<-18>', '%d on a negative float');
+
+is(sprintf('%c', 97), 'a', '%c directive');
