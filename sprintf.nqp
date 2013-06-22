@@ -29,13 +29,12 @@ sub sprintf($format, *@arguments) {
         ~$result;
     }
 
-    # NQPBUG: Can't use the actual prefix 'next' in a subname
-    sub newt_argument() {
+    sub next_argument() {
         @arguments[$argument_index++];
     }
 
     sub string_directive($size) {
-        my $string := newt_argument();
+        my $string := next_argument();
         infix_x(' ', $size - nqp::chars($string)) ~ $string;
     }
 
@@ -51,7 +50,7 @@ sub sprintf($format, *@arguments) {
     }
 
     sub decimal_int_directive($size) {
-        my $int := intify(newt_argument());
+        my $int := intify(next_argument());
         infix_x(' ', $size - nqp::chars($int)) ~ $int;
     }
 
@@ -72,7 +71,7 @@ sub sprintf($format, *@arguments) {
             unless nqp::existskey(%directives, ~$match<letter>);
 
         my $directive := %directives{~$match<letter>};
-        my $size := $match<size>[0] eq '*' ?? newt_argument() !! +$match<size>[0];
+        my $size := $match<size>[0] eq '*' ?? next_argument() !! +$match<size>[0];
         $directive($size);
     }
 
