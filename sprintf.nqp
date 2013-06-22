@@ -116,10 +116,18 @@ sub sprintf($format, *@arguments) {
         infix_x(' ', $size - 1) ~ '%';
     }
 
+    sub octal_directive($size) {
+        my $int := intify(next_argument());
+        my $knowhow := nqp::knowhow().new_type(:repr("P6bigint"));
+        $int := nqp::base_I(nqp::box_i($int, $knowhow), 8);
+        infix_x(' ', $size - nqp::chars($int)) ~ $int;
+    }
+
     my %directives := nqp::hash(
         '%', &percent_escape,
         's', &string_directive,
         'd', &decimal_int_directive,
+        'o', &octal_directive,
     );
 
     sub inject($match) {
@@ -195,3 +203,6 @@ is(sprintf('<%d>', 1), '<1>', '%d without size or precision');
 is(sprintf('<%d>', "lol, I am a string"), '<0>', '%d on a non-number');
 is(sprintf('<%d>', 42.18), '<42>', '%d on a float');
 is(sprintf('<%d>', -18.42), '<-18>', '%d on a negative float');
+
+is(sprintf('%o', 12), '14', 'simple %o');
+is(sprintf('%o', 22.01), '26', 'decimal %o');
